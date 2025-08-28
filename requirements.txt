@@ -1,0 +1,8 @@
+streamlit
+pandas
+scikit-learn
+joblib
+numpy
+matplotlib
+seaborn
+dataset link= https://drive.google.com/file/d/1h3TTYqVU5TdW30F8x3qNnvWFA1Z8q6w1/view?usp=drive_link
