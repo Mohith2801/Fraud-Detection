@@ -1,8 +1,5 @@
-streamlit
-pandas
-scikit-learn
-joblib
-numpy
-matplotlib
-seaborn
-dataset link= https://drive.google.com/file/d/1h3TTYqVU5TdW30F8x3qNnvWFA1Z8q6w1/view?usp=drive_link
+streamlit==1.30.0
+pandas==2.1.4
+scikit-learn==1.3.2
+joblib==1.3.2
+numpy==1.26.2
