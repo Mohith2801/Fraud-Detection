@@ -2,49 +2,59 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Load the trained model pipeline
-try:
-    pipeline = joblib.load('fraud_model.pkl')
-except FileNotFoundError:
-    st.error("Error: The 'fraud_model.pkl' file was not found. Please train and save the model first.")
-    st.stop()
+# Load the trained model and data
+@st.cache_resource
+def load_data_and_model():
+    """Load the dataset and the trained model."""
+    try:
+        # CORRECT: Use relative paths for files in the same repository
+        data = pd.read_csv("Fraud.csv")
+        model = joblib.load("fraud_model.pkl")
+        return data, model
+    except FileNotFoundError:
+        st.error("Error: The 'Fraud.csv' or 'fraud_model.pkl' file was not found. Please ensure both files are in the same GitHub repository as your app.py file.")
+        return None, None
 
-# Set page title and header
-st.set_page_config(page_title="Fraud Detection App", layout="centered")
-st.title("Fraud Detection App")
-st.markdown("Enter transaction details below to predict if it is fraudulent.")
+data, model = load_data_and_model()
 
-# Create input fields for user data
-with st.form("transaction_form"):
-    st.header("Transaction Details")
-    
-    # Use a selectbox for the categorical feature 'type'
-    transaction_type = st.selectbox(
-        "Transaction Type",
-        options=['CASH_OUT', 'PAYMENT', 'CASH_IN', 'TRANSFER', 'DEBIT']
-    )
-    
-    # Use number inputs for numerical features
-    amount = st.number_input("Amount", min_value=0.01, format="%.2f")
-    oldbalanceOrg = st.number_input("Old Balance (Originator)", min_value=0.0, format="%.2f")
-    newbalanceOrig = st.number_input("New Balance (Originator)", min_value=0.0, format="%.2f")
-    oldbalanceDest = st.number_input("Old Balance (Destination)", min_value=0.0, format="%.2f")
-    newbalanceDest = st.number_input("New Balance (Destination)", min_value=0.0, format="%.2f")
+if data is not None and model is not None:
+    # Set the title of the Streamlit app
+    st.title("Fraud Detection App")
 
-    submitted = st.form_submit_button("Predict")
+    # Display some information about the dataset
+    st.header("Dataset Overview")
+    st.write(data.head())
+    
+    # User input for new transaction
+    st.header("Predict Fraud for a New Transaction")
+    
+    # Create input fields for features
+    step = st.number_input('Step', min_value=0)
+    type_trans = st.selectbox('Type', data['type'].unique())
+    amount = st.number_input('Amount', min_value=0.0)
+    nameOrig = st.text_input('Name of Originator (nameOrig)')
+    oldbalanceOrg = st.number_input('Old Balance Originator', min_value=0.0)
+    newbalanceOrig = st.number_input('New Balance Originator', min_value=0.0)
+    nameDest = st.text_input('Name of Destination (nameDest)')
+    oldbalanceDest = st.number_input('Old Balance Destination', min_value=0.0)
+    newbalanceDest = st.number_input('New Balance Destination', min_value=0.0)
+    isFlaggedFraud = st.selectbox('isFlaggedFraud', [0, 1])
 
-# When the user clicks the 'Predict' button
-if submitted:
-    # Create a DataFrame from the user inputs
-    input_data = pd.DataFrame([[
-        transaction_type, amount, oldbalanceOrg, newbalanceOrig, oldbalanceDest, newbalanceDest
-    ]], columns=['type', 'amount', 'oldbalanceOrg', 'newbalanceOrig', 'oldbalanceDest', 'newbalanceDest'])
-    
-    # Make a prediction
-    prediction = pipeline.predict(input_data)
-    
-    # Display the result
-    if prediction[0] == 1:
-        st.error("This transaction is predicted as **FRAUDULENT**.")
-    else:
-        st.success("This transaction is predicted as **NOT FRAUDULENT**.")
+    if st.button('Predict'):
+        # Prepare the input for prediction
+        input_data = pd.DataFrame([[step, type_trans, amount, nameOrig, oldbalanceOrg,
+                                      newbalanceOrig, nameDest, oldbalanceDest,
+                                      newbalanceDest, isFlaggedFraud]],
+                                  columns=['step', 'type', 'amount', 'nameOrig', 'oldbalanceOrg',
+                                           'newbalanceOrig', 'nameDest', 'oldbalanceDest',
+                                           'isFlaggedFraud'])
+        
+        # Make a prediction
+        prediction = model.predict(input_data)
+        
+        # Display the result
+        st.subheader("Prediction Result:")
+        if prediction[0] == 1:
+            st.error("Fraudulent Transaction")
+        else:
+            st.success("Non-Fraudulent Transaction")
