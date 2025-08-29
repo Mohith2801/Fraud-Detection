@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# These are the imports needed to load your saved pipeline
+# These are the imports needed to load your saved pipeline and its components
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
