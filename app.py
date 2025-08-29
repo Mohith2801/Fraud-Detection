@@ -2,7 +2,10 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Add this specific import for your model type
+# These are the imports needed to load your saved pipeline
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
 
 # Load the trained model and data
@@ -10,8 +13,8 @@ from sklearn.linear_model import LogisticRegression
 def load_data_and_model():
     """Load the dataset and the trained model."""
     try:
-        # CORRECT: Use relative paths for files in the same repository
         data = pd.read_csv("Fraud.csv")
+        # The file is a pipeline, so we import the pipeline class
         model = joblib.load("fraud_model.pkl")
         return data, model
     except FileNotFoundError:
